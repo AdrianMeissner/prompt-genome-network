@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/kis",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
