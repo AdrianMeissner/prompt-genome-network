@@ -13,9 +13,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Category, GenotypVektor } from '@/types'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+let _client: Anthropic | null = null
+function getClient(): Anthropic {
+  if (!_client) {
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+  }
+  return _client
+}
 
 const MODEL = 'claude-sonnet-4-20250514'
 
@@ -39,7 +43,7 @@ export async function analysierePrompt(
   promptText: string,
   kategorie: Category
 ): Promise<GenotypVektor> {
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: MODEL,
     max_tokens: 256,
     system: [
@@ -116,7 +120,7 @@ export async function verbesserePrompt(
   empfehlungen: string[]
   erklaerung: string
 }> {
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: MODEL,
     max_tokens: 1024,
     system: [

@@ -2,19 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminSupabase } from '@/lib/supabase-server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-03-25.dahlia',
-})
-
-/**
- * POST /api/stripe/webhook
- *
- * Empfängt Stripe Webhook Events und aktualisiert den User-Plan in Supabase.
- *
- * Entscheidung: Admin-Client ohne RLS für direkte Profile-Updates.
- * Wichtig: Raw Body für Stripe Signature Verification erforderlich.
- */
 export async function POST(request: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-03-25.dahlia',
+  })
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')!
 

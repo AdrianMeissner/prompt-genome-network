@@ -2,21 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerSupabase } from '@/lib/supabase-server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-03-25.dahlia',
-})
-
-const PRICE_IDS: Record<string, string> = {
-  pro: process.env.STRIPE_PRO_PRICE_ID!,
-  team: process.env.STRIPE_TEAM_PRICE_ID!,
-}
-
-/**
- * GET /api/stripe/checkout?plan=pro|team
- *
- * Erstellt eine Stripe Checkout Session und redirectet den User.
- */
 export async function GET(request: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-03-25.dahlia',
+  })
+
+  const PRICE_IDS: Record<string, string> = {
+    pro: process.env.STRIPE_PRO_PRICE_ID!,
+    team: process.env.STRIPE_TEAM_PRICE_ID!,
+  }
   try {
     const supabase = await createServerSupabase()
     const { data: { user } } = await supabase.auth.getUser()
