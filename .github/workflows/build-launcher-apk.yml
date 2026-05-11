@@ -1,0 +1,75 @@
+name: Build AdrianOS APK
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+    paths:
+      - 'adrianos-launcher/**'
+      - '.github/workflows/build-launcher-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
+
+      - name: Generate Gradle wrapper if missing
+        working-directory: adrianos-launcher
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 8.6
+            chmod +x gradlew
+          fi
+
+      - name: Build debug APK
+        working-directory: adrianos-launcher
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: |
+          mkdir -p artifacts
+          cp adrianos-launcher/app/build/outputs/apk/debug/app-debug.apk \
+             artifacts/adrianos-${{ github.run_number }}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: adrianos-debug-apk
+          path: artifacts/adrianos-${{ github.run_number }}.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: AdrianOS Build #${{ github.run_number }}
+          body: |
+            Automatic build from commit ${{ github.sha }}.
+
+            **Install on your phone:**
+            1. Open this page in your phone's browser
+            2. Tap the `.apk` below to download it
+            3. Allow installation from this source if prompted
+            4. After install, press Home and pick **AdrianOS** as your launcher
+          files: artifacts/adrianos-${{ github.run_number }}.apk
+          prerelease: true
