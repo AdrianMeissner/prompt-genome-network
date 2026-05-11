@@ -1,0 +1,4 @@
+-keep class com.adrianos.launcher.** { *; }
+-keepclassmembers class * extends androidx.room.RoomDatabase { *; }
+-keep @dagger.hilt.android.AndroidEntryPoint class * { *; }
+-dontwarn com.microsoft.onnxruntime.**
